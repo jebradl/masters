@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 from data_processing import FeatureDataset
 
-feature_set = FeatureDataset('c:/Users/night/Documents/09/school/actual-masters/data/fma-master/pca95_data.csv')
+feature_set = FeatureDataset('c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/pca95_data.csv')
 
 
 class Net(nn.Module):
@@ -52,8 +52,8 @@ for epoch in range(Epochs):
         loss.backward()
         optimiser.step()
 
-correct = 0
-total = 0
+# correct = 0
+# total = 0
 
 # with torch.no_grad():
 #     for data in testset:
