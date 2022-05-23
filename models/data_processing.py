@@ -13,6 +13,8 @@ class FeatureDataset(Dataset):
         super().__init__()
         print("dataset")
 
+        transform = transforms.Compose()
+
         # reading csv and loaidng data
         dataset_ = pd.read_csv(file_name)
         x = dataset_.iloc[1:8001, 1:208].values

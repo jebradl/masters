@@ -25,11 +25,11 @@ print(spec)
 # plt.show()
 
 data_h, data_p = librosa.effects.hpss(data)
-spec_h = librosa.feature.melspectrogram(data_h)
-spec_p = librosa.feature.melspectrogram(data_p)
+spec_h = librosa.feature.melspectrogram(y=data_h)
+spec_p = librosa.feature.melspectrogram(y=data_p)
 db_spec_h = librosa.power_to_db(spec_h,ref=np.max)
 db_spec_p = librosa.power_to_db(spec_p,ref=np.max)
 
-# librosa.display.specshow(db_spec_p,y_axis='mel', x_axis='s', sr=sr)
-# plt.colorbar();
-# plt.show()
+librosa.display.specshow(db_spec_p,y_axis='mel', x_axis='s', sr=sr)
+plt.colorbar();
+plt.show()
