@@ -14,11 +14,14 @@ import os
 
 # file_path 
 
+
+#### this is doing the thing but creating them in the wrong place 
+
 def process_audio(file_name, path):
     track = os.path.join(path, file_name)
     audio = AudioSegment.from_file(track, "mp3") 
     chunk_len = 3000 # pydub calculates in millisec 
-    chunks = make_chunks(audio,chunk_len) #Make chunks of one sec 
+    chunks = make_chunks(audio,chunk_len)
     for i, chunk in enumerate(chunks): 
         chunk_name = './chunked/' + file_name + "_{0}.wav".format(i) 
         print ("exporting", chunk_name) 
