@@ -8,8 +8,8 @@
 - [x] get svm working
 - [x] get knn working
 - [x] get librosa basics working
+- [x] get react up and running
 - [ ] work out options for source data re librosa type
-- [ ] react
 - [ ] reply to yuli re max stuff
 - [ ] get ann working for sure
 - [ ] get cnn working
