@@ -17,6 +17,7 @@ def process_audio(file_name, path):
     print(chunk_path)
     audio = AudioSegment.from_file(track, "mp3") 
     chunk_len = 3000 # pydub calculates in millisec 
+    # what about to the beat
     chunks = make_chunks(audio, chunk_len)
     for i, chunk in enumerate(chunks): 
         chunk_name = track_no[0] + "_{:02d}.wav".format(i) 
