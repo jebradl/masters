@@ -42,7 +42,7 @@ def classify_image(image):
     shutil.copyfile(images_path+'/'+image, target_path+'/'+image)
 
 
-#classify_image('000002.png')
+# classify_image('000002.png')
 
 
 for image in tqdm(images):

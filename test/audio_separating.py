@@ -33,9 +33,10 @@ all_files = os.listdir(path)
 # put chunks in that folder
 # analyse each of the chunks
 
+part_2 = ['i_got_a_boy.mp3', 'the_heart.mp3', 'this_side.mp3']
 
 for file in all_files:
-    if ('.mp3' in file):
+    if ('.mp3' in file) and (file in part_2):
         try:
             # print('hello')
             track_no = file.split('.')
@@ -48,7 +49,7 @@ for file in all_files:
             pass
 
 for file in all_files:
-    if ('.mp3' in file):
+    if ('.mp3' in file) and (file in part_2):
         # file is just file
         # path is path to original file
         # destination is path + 'song-chunked'
