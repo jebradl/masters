@@ -42,7 +42,6 @@ def dummy_analyse(file_name, path):
     spec = librosa.feature.melspectrogram(y=data, sr=sr)
     spec_db = librosa.power_to_db(spec, ref=np.max)
 
-    
 
 
 
