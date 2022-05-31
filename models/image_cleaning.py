@@ -34,19 +34,24 @@ def create_images(file_name, path, save_to):
 
 
 
-save_to = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img/'
+# save_to = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img/'
 path_create = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/fma_small/'
 to_create = ['133', '134', '135', '136', '137', '138', '139', '140', '141', '142', '143', '144', '145', '146', '147', '148', '149', '150', '151', '152', '153', '154']
 
 
-for folder in to_create:
-    print('new folder: {}'.format(folder))
-    folder = folder + '/'
-    path = os.path.join(path_create, folder)
-    # print(path)
-    audio_files = os.listdir(path)
-    for file in audio_files:
-        create_images(file, path, save_to)
+# for folder in to_create:
+#     print('new folder: {}'.format(folder))
+#     folder = folder + '/'
+#     path = os.path.join(path_create, folder)
+#     # print(path)
+#     audio_files = os.listdir(path)
+#     for file in audio_files:
+#         create_images(file, path, save_to)
 
 # file = '042243.mp3'
 # create_images(file, path, save_to)
+
+test_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/test/sample_sounds/swipe-chunked/'
+save_to = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/test_random/'
+
+create_images('swipe_20.wav', test_path, save_to)
