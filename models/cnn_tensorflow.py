@@ -6,6 +6,8 @@ import PIL
 import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
 from tensorflow.python import keras
@@ -13,21 +15,18 @@ from tensorflow.python.keras import layers
 from tensorflow.python.keras.models import Sequential
 
 
-
 feature_set = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_small'
 # feature_set = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img'
 data_dir = pathlib.Path(feature_set)
 
 image_count = len(list(data_dir.glob('*/*.png')))
-print(image_count)
+#print(image_count)
 
-# electronic = list(data_dir.glob('Electronic/*'))
-# im = PIL.Image.open(str(electronic[0]))
-# im.show()
-
-batch_size = 10
+batch_size = 32  # 64 for gpu
 img_height = 235
 img_width = 352
+
+epochs = 4 # 50
 
 train_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
@@ -47,19 +46,6 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 
 class_names = train_ds.class_names
 
-# plt.figure(figsize=(10, 10))
-# for images, labels in train_ds.take(1):
-#   for i in range(8):
-#     ax = plt.subplot(3, 3, i + 1)
-#     plt.imshow(images[i].numpy().astype("uint8"))
-#     plt.title(class_names[labels[i]])
-#     plt.axis("off")
-# plt.show()
-
-# for image_batch, labels_batch in train_ds:
-#   print(image_batch.shape)
-#   print(labels_batch.shape)
-#   break
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -68,61 +54,57 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 normalization_layer = tf.keras.layers.Rescaling(1./255, offset=0.0)
 
-
 num_classes = len(class_names)
 
-data_augmentation = keras.Sequential(
-  [
-    tf.keras.layers.RandomFlip("horizontal",
-                      input_shape=(img_height,
-                                  img_width,
-                                  3)),
-    tf.keras.layers.RandomRotation(0.1),
-    tf.keras.layers.RandomZoom(0.1),
-  ]
-)
+
+def create_model():
+
+    model = Sequential([
+      tf.keras.layers.Rescaling(1./255),
+      layers.Conv2D(32, 3, padding='same', activation='relu'),
+      layers.MaxPooling2D(),
+      layers.Conv2D(64, 3, padding='same', activation='relu'),
+      layers.MaxPooling2D(),
+      layers.Conv2D(128, 3, padding='same', activation='relu'),
+      layers.MaxPooling2D(),
+      layers.Dropout(0.2),
+      layers.Flatten(), # view
+      layers.Dense(128, activation='relu'),
+      layers.Dense(num_classes)
+    ])  # still v small network
+
+    model.compile(optimizer='adam',
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])   # tf.optimizers.Adam(learning_rate=0.005)
+
+    return model
 
 
-# model = Sequential([
-#   tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
-#   layers.Conv2D(16, 3, padding='same', activation='relu'),
-#   layers.MaxPooling2D(),
-#   layers.Conv2D(32, 3, padding='same', activation='relu'),
-#   layers.MaxPooling2D(),
-#   layers.Conv2D(64, 3, padding='same', activation='relu'),
-#   layers.MaxPooling2D(),
-#   layers.Flatten(),
-#   layers.Dense(128, activation='relu'),
-#   layers.Dense(num_classes)
-# ])
+checkpoint_path = "c:/Users/night/Documents/09/school/actual-masters/git/masters/models/training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+# create a callback that saves the model's weights
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1,
+                                                 save_freq=200)
 
 
-model = Sequential([
-  data_augmentation,
-  tf.keras.layers.Rescaling(1./255),
-  layers.Conv2D(16, 5, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Conv2D(32, 5, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Conv2D(64, 5, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Dropout(0.2),
-  layers.Flatten(),
-  layers.Dense(128, activation='relu'),
-  layers.Dense(num_classes)
-])
+# create a new model instance
+model = create_model()
+# model.save_weights(checkpoint_path.format(epoch=0))
 
-
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-
-epochs=15
 history = model.fit(
   train_ds,
   validation_data=val_ds,
-  epochs=epochs
+  epochs=epochs,
+  callbacks=[cp_callback],
+  verbose=1
 )
+
+# !mkdir -p saved_model
+model.save('c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v1.h5')
+
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -147,16 +129,13 @@ plt.title('Training and Validation Loss')
 plt.show()
 
 
-
-
-
 test_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/test_random/swipe_20.png'
 
 img = tf.keras.utils.load_img(
     test_path, target_size=(img_height, img_width)
 )
 img_array = tf.keras.utils.img_to_array(img)
-img_array = tf.expand_dims(img_array, 0) # Create a batch
+img_array = tf.expand_dims(img_array, 0) # create batch
 
 predictions = model.predict(img_array)
 score = tf.nn.softmax(predictions[0])
