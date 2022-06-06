@@ -2,6 +2,7 @@
 
 import os
 import PIL
+import time
 import pathlib
 from matplotlib import image
 import numpy as np
@@ -12,11 +13,8 @@ import matplotlib.pyplot as plt
 from pydub import AudioSegment
 from pydub.utils import make_chunks
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-
-from tensorflow.python import keras
-from tensorflow.python.keras import layers
-from tensorflow.python.keras.models import Sequential
 
 
 
@@ -44,22 +42,40 @@ class SongAnalysis():
 
         self.chunk_track()
         self.create_images_folder()
-        
-        for chunk in self.chunk_dir:
-            self.create_image()
-            self.get_scores()
+
+        print(self.chunk_path)
+        chunk_dir = os.listdir(self.chunk_path)
+        print("new:", chunk_dir)
+
+        print("start!")
+        time.sleep(1)
+
+        for chunk in chunk_dir:
+            start = time.perf_counter()
+            # print(chunk)
+            # self.create_image(chunk)
+            self.generate_mean(chunk)
+            remaining = 3-(time.perf_counter()-start)
+            time.sleep(remaining)
 
 
     def chunk_track(self):
         folder_name = self.track + ' chunked'
-        chunk_path = os.path.join(self.folder_path, folder_name)
+        chunk_path = self.folder_path + '/' + folder_name
+
+        print(chunk_path)
 
         try:
             os.makedirs(chunk_path)
         except:
             pass
 
-        self.chunk_dir = os.listdir(chunk_path)
+        # print(chunk_dir)
+
+        # self.chunk_dir = chunk_dir
+        self.chunk_path = chunk_path
+
+        # print(self.chunk_dir)
 
         track_location = os.path.join(self.parent, self.file)
         audio = AudioSegment.from_file(track_location, 'mp3')
@@ -67,14 +83,14 @@ class SongAnalysis():
         chunks = make_chunks(audio, chunk_len)
 
         for i, chunk in enumerate(chunks):
-            chunk_name = self.track + "_{:02d}.wav".format(i) 
-            chunk.export(chunk_path + '/' + chunk_name, format="wav")
+            chunk_name = self.track + "_{:03d}.wav".format(i) 
+            chunk.export(self.chunk_path + '/' + chunk_name, format="wav")
     
 
     def create_images_folder(self):
 
         images_folder = self.track + ' images'
-        self.images_folder = os.path.join(self.folder_path, images_folder)
+        self.images_folder = self.folder_path + '/' + images_folder
 
         try:
             os.makedirs(self.images_folder)
@@ -85,7 +101,8 @@ class SongAnalysis():
     def create_image(self, chunk):
 
         # establish path? when you put it all together when does is make the joined path?
-        data, sr = librosa.load(chunk, res_type='kaiser_fast')
+        chunk_path = os.path.join(self.chunk_path, chunk)
+        data, sr = librosa.load(chunk_path, res_type='kaiser_fast')
         spec = librosa.feature.melspectrogram(y=data, sr=sr)
         spec_big = librosa.power_to_db(spec)
 
@@ -93,7 +110,7 @@ class SongAnalysis():
         image_name = image_name[0]
 
         img = librosa.display.specshow(spec_big)
-        img_path = self.images_folder+"{}.png".format(image_name)
+        img_path = self.images_folder+"/{}.png".format(image_name)
         plt.savefig(img_path, bbox_inches='tight')
         plt.clf()
 
@@ -119,13 +136,22 @@ class SongAnalysis():
         
         return scores
 
+    def generate_mean(self, file):
+        
+        track = os.path.join(self.chunk_path, file)
+        x, sr = librosa.load(track, sr=None, mono=True)  # kaiser_fast
+
+        stft = np.abs(librosa.stft(x, n_fft=2048, hop_length=512))
+
+        mel = librosa.feature.melspectrogram(sr=sr, S=stft**2)
+        f = librosa.feature.mfcc(S=librosa.power_to_db(mel), n_mfcc=20)
+
+        feature = np.mean(f)
+        print('song: {} mean: {}'.format(file, feature))
+
     
 
 
-
-
-
-        
 
 
 
