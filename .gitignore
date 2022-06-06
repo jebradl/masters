@@ -1,5 +1,7 @@
 models/model results/
 models/for_use/
+models/__pycache__/
+models/.ipynb_checkpoints/
 models/data/fma/
 *.mp3
 test/sample_sounds/
