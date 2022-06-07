@@ -70,8 +70,7 @@ class SongAnalysis():
         except:
             pass
 
-        # print(chunk_dir)
-
+        # print(chunk_dir) 
         # self.chunk_dir = chunk_dir
         self.chunk_path = chunk_path
 
