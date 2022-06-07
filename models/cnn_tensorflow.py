@@ -13,6 +13,7 @@ import tensorflow as tf
 from tensorflow.python import keras
 from tensorflow.python.keras import layers
 from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.optimizer_v2 import adam
 
 
 feature_set = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_small'
@@ -26,7 +27,7 @@ batch_size = 32  # 64 for gpu
 img_height = 235
 img_width = 352
 
-epochs = 4 # 50
+epochs = 20 # 50
 
 train_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
@@ -47,6 +48,8 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 class_names = train_ds.class_names
 
 
+
+
 AUTOTUNE = tf.data.AUTOTUNE
 
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
@@ -55,6 +58,8 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 normalization_layer = tf.keras.layers.Rescaling(1./255, offset=0.0)
 
 num_classes = len(class_names)
+
+# adam = adam()
 
 
 def create_model():
@@ -73,9 +78,10 @@ def create_model():
       layers.Dense(num_classes)
     ])  # still v small network
 
-    model.compile(optimizer='adam',
+
+    model.compile(optimizer=adam.Adam(learning_rate=0.005),
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])   # tf.optimizers.Adam(learning_rate=0.005)
+                  metrics=['accuracy'])
 
     return model
 
@@ -101,9 +107,6 @@ history = model.fit(
   callbacks=[cp_callback],
   verbose=1
 )
-
-# !mkdir -p saved_model
-model.save('c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v1.h5')
 
 
 acc = history.history['accuracy']
@@ -144,3 +147,20 @@ print(
     "This image most likely belongs to {} with a {:.2f} percent confidence."
     .format(class_names[np.argmax(score)], 100 * np.max(score))
 )
+
+
+def get_config(self):
+
+  config = super().get_config().copy()
+  config.update({
+      'vocab_size': self.vocab_size,
+      'num_layers': self.num_layers,
+      'units': self.units,
+      'd_model': self.d_model,
+      'num_heads': self.num_heads,
+      'dropout': self.dropout,
+  })
+  return config
+
+# !mkdir -p saved_model
+model.save('c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v1.h5')
