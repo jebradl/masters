@@ -3,7 +3,10 @@ models/training_1/
 models/for_use/
 models/__pycache__/
 models/.ipynb_checkpoints/
-models/data/fma/
+models/data/fma/classified_small/
+models/data/fma/fma_metadata/
+models/data/fma/fma_small/
+models/data/fma/img/
 *.mp3
 test/sample_sounds/
 runs/
