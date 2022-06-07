@@ -3,6 +3,7 @@ import os
 import numpy as np
 from time import sleep
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -12,18 +13,41 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 
-dataset_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_small'
-save_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/'
+dataset_path = 'C:/Users/jeb1618/masters/models/data/fma/classified_small'
+save_path = 'C:/Users/jeb1618/masters/models/saved_models/'
 
-batch_size = 32  # 64 for gpu
+batch_size = 64  # 64 for gpu
 img_height = 235
 img_width = 352
 
-epochs = 20 # 50
+epochs = 50 # 50
 test_split = 0.8
+
+y_loss = {}  # loss history
+y_loss['train'] = []
+y_loss['val'] = []
+y_err = {}
+y_err['train'] = []
+y_err['val'] = []
+x_epoch = []
+
+fig = plt.figure()
+ax0 = fig.add_subplot(121, title="loss")
+ax1 = fig.add_subplot(122, title="top1err")
+
+def draw_curve(current_epoch):
+    x_epoch.append(current_epoch)
+    ax0.plot(x_epoch, y_loss['train'], 'bo-', label='train')
+    ax0.plot(x_epoch, y_loss['val'], 'ro-', label='val')
+    ax1.plot(x_epoch, y_err['train'], 'bo-', label='train')
+    ax1.plot(x_epoch, y_err['val'], 'ro-', label='val')
+    if current_epoch == 0:
+        ax0.legend()
+        ax1.legend()
+    fig.savefig(os.path.join('./lossGraphs', 'train.jpg'))
 
 
 transform = transforms.Compose([
@@ -59,36 +83,27 @@ class Net(nn.Module):
     def convs(self, x):
 
         x = F.max_pool2d(F.relu(self.conv1(x)), (2,2))
-        # print("2. x size:", x.size())
         x = F.max_pool2d(F.relu(self.conv2(x)), (2,2))
-        # print("3. x size:", x.size())
         x = F.max_pool2d(F.relu(self.conv3(x)), (2,2))
-        # print("4. x size:", x.size())
 
         x = self.dropout(x)
 
         return x
 
     def forward(self, x):
-        x = self.convs(x)
-        # print("5. x size:", x.size())
-        x = x.view(-1, 128*31*45) # i still don't get the -1 but for later
-        # print("6. x size:", x.size())
 
-        x = self.fc1(x)
-        # print("7. x size:", x.size())
-        x = F.relu(x) 
-        # print("8. x size:", x.size())
+        x = self.convs(x)
+        x = x.view(-1, 128*31*45)
+
+        x = F.relu(self.fc1(x)) 
         x = self.fc2(x)
-        # print("9. x size:", x.size())
-        
 
         p = F.softmax(x, dim=1)
         
         return p
 
 net = Net()
-tb = SummaryWriter()
+# tb = SummaryWriter()
 
 
 optimiser = optim.Adam(net.parameters(), lr=0.005)
@@ -97,13 +112,14 @@ criterion = nn.CrossEntropyLoss()
 def get_num_correct(preds, labels):
     return preds.argmax(dim=1).eq(labels).sum().item()
 
+
 if __name__ == "__main__":
     for i in range(epochs):
 
         print("Epoch", i+1)
         
-        total_loss = 0
-        total_correct = 0
+        running_loss = 0
+        running_correct = 0
 
         with tqdm(test_ds, unit="batch") as tepoch:
             for data in tepoch:
@@ -115,24 +131,21 @@ if __name__ == "__main__":
                 output = net.forward(X)
 
                 loss = F.nll_loss(output, y)
-                total_loss += loss.item()
-                total_correct+= get_num_correct(output, y)
+                running_loss += loss.item() * batch_size
+                running_correct += get_num_correct(output, y)
 
                 loss.backward()
                 optimiser.step()
 
-        # tb.add_scalar("Loss", total_loss, i)
-        # tb.add_scalar("Correct", total_correct, i)
-        # tb.add_scalar("Accuracy", total_correct/ len(test_ds), i)
+        epoch_loss = running_loss / batch_size
+        epoch_acc = running_correct / batch_size
+        # y_loss['train'].append(epoch_loss)
+        # y_err['train'].append(1.0 - epoch_acc)
 
-        # tb.add_histogram("conv1.bias", net.conv1.bias, i)
-        # tb.add_histogram("conv1.weight", net.conv1.weight, i)
-        # tb.add_histogram("conv2.bias", net.conv2.bias, i)
-        # tb.add_histogram("conv2.weight", net.conv2.weight, i)
-        # tb.add_histogram("conv2.bias", net.conv3.bias, i)
-        # tb.add_histogram("conv2.weight", net.conv3.weight, i)
+        print("total correct:", running_correct, "accuracy", epoch_acc, "loss:", epoch_loss)
 
-        print("total correct:", total_correct, "loss:", total_loss)
+        # if i == len(range(epochs))-1:
+        #     draw_curve(i)
 
     # tb.close()
 
@@ -150,5 +163,6 @@ if __name__ == "__main__":
                     correct += 1
                 total += 1
     print("accuracy:", round(correct/total, 3))
-
-    torch.save(net, os.path.join(save_path, 'model_v1.pt'))
+    
+    # draw_curve()
+    torch.save(net, os.path.join(save_path, 'model_v2.pt'))
