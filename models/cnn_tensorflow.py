@@ -16,7 +16,8 @@ from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.optimizer_v2 import adam
 
 
-feature_set = 'C:/Users/jeb1618/masters/models/data/fma/classified_small'
+feature_set = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_small'
+save_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v3'
 # feature_set = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img'
 data_dir = pathlib.Path(feature_set)
 
@@ -26,7 +27,7 @@ image_count = len(list(data_dir.glob('*/*.png')))
 img_height = 235
 img_width = 352
 
-batch_size = 64  # 64 for gpu
+batch_size = 32  # 64 for gpu
 epochs = 10 # 50
 
 # v1/hmm was 64/15/0.005lr
@@ -126,7 +127,7 @@ history = model.fit(
 # testing = model.evaluate(val_ds, batch_size=batch_size, verbose=1)
 
 
-model.save('C:/Users/jeb1618/masters/models/saved_models/model_v3')
+model.save(save_path)
 
 
 
@@ -173,4 +174,4 @@ print(
 )
 
 # !mkdir -p saved_model
-model.save('C:/Users/jeb1618/masters/models/saved_models/model_v2')
+# model.save('C:/Users/jeb1618/masters/models/saved_models/model_v2')

@@ -1,6 +1,8 @@
 models/model results/
 models/training_1/
 models/for_use/
+models/saved_models/
+models/model results/
 models/__pycache__/
 models/.ipynb_checkpoints/
 models/data/fma/classified_small/

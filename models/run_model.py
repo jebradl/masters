@@ -1,7 +1,6 @@
 # aim is to have everything enough in one place so that i can just dump a file and run it
 
 import os
-import PIL
 import time
 import pathlib
 from matplotlib import image
@@ -16,19 +15,28 @@ from pydub.utils import make_chunks
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
-
+from tensorflow.python import keras
+from tensorflow.python.keras import layers
+from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.optimizer_v2 import adam
 
 class SongAnalysis():
 
-    def __init__(self,file):
+    def __init__(self,file,model_path=None):
         super().__init__()
 
-        self.image_height = 235
-        self.image_width = 352
+        self.img_height = 235
+        self.img_width = 352
+        self.batch_size = 32
+
+        self.genre_list = ['Electronic', 'Experimental', 'Folk', 'Hip-Hop', 'Instrumental', 'International', 'Pop', 'Rock']
 
         track = file.replace('.mp3', '')
         self.track = track
         self.file = file
+
+        if model_path != None:
+            self.model_path = model_path
 
         self.parent = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/for_use/'
         self.folder_path = os.path.join(self.parent, self.track)
@@ -42,21 +50,29 @@ class SongAnalysis():
 
         self.chunk_track()
         self.create_images_folder()
+        self.load_model()
 
-        print(self.chunk_path)
+        # print(self.chunk_path)
         chunk_dir = os.listdir(self.chunk_path)
-        print("new:", chunk_dir)
+        # print("new:", chunk_dir)
 
-        print("start!")
+        print("processing: start!")
         time.sleep(1)
+
+        self.song_scores = []
 
         for chunk in chunk_dir:
             start = time.perf_counter()
             # print(chunk)
-            # self.create_image(chunk)
-            self.generate_mean(chunk)
+            # print(self.chunk_path)
+            img = self.create_image(chunk)
+            # self.generate_mean(chunk)
+            score = self.get_scores(img)
+            self.song_scores.append(score)
             remaining = 3-(time.perf_counter()-start)
-            time.sleep(remaining)
+            # time.sleep(remaining)
+
+        self.process_results()
 
 
     def chunk_track(self):
@@ -115,6 +131,14 @@ class SongAnalysis():
 
         return img_path
 
+    def load_model(self):
+
+        print("loading model...")
+
+        self.model = keras.models.load_model(self.model_path)
+
+        print("model loaded!")
+
     
     def get_scores(self, img_path):
         # change img size and not having to save then load img?
@@ -126,14 +150,15 @@ class SongAnalysis():
         img_array = tf.keras.utils.img_to_array(img)
         img_array = tf.expand_dims(img_array, 0) # Create a batch
 
-        predictions = model.predict(img_array)
+        predictions = self.model.predict(img_array)
         score = tf.nn.softmax(predictions[0])
         
-        scores = []
+        self.scores = []
         for i in score:
-            scores.append(float(i))
-        
-        return scores
+            self.scores.append(float(i))
+
+        # print(self.scores)
+        return self.scores
 
     def generate_mean(self, file):
         
@@ -148,12 +173,24 @@ class SongAnalysis():
         feature = np.mean(f)
         print('song: {} mean: {}'.format(file, feature))
 
+    def process_results(self):
+
+        df = pd.DataFrame(self.song_scores, columns=self.genre_list)
+        df.to_csv('data.csv')
+        data = pd.read_csv('data.csv', index_col=False)
+
+        data[self.genre_list].plot()
+        # plt.show()
+
+        plt.savefig(self.parent+'results/'+self.track, bbox_inches='tight')
+        
+
     
 
 
 
 
 
-track = 'the_heart.mp3'
-
-analyse = SongAnalysis(track)
+track = 'this_side.mp3'
+model = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v4'
+analyse = SongAnalysis(track, model)
