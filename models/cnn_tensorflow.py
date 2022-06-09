@@ -156,7 +156,7 @@ plt.title('Training and Validation Loss')
 plt.show()
 
 
-test_path = 'C:/Users/jeb1618/masters/models/data/fma/test_random/swipe_20.png'
+test_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/test_random/swipe_20.png'
 
 
 img = tf.keras.utils.load_img(

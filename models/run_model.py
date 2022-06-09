@@ -22,7 +22,7 @@ from tensorflow.python.keras.optimizer_v2 import adam
 
 class SongAnalysis():
 
-    def __init__(self,file,model_path=None):
+    def __init__(self,file,model=None):
         super().__init__()
 
         self.img_height = 235
@@ -35,8 +35,9 @@ class SongAnalysis():
         self.track = track
         self.file = file
 
-        if model_path != None:
-            self.model_path = model_path
+        if model != None:
+            self.model = model
+            self.model_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/'+self.model
 
         self.parent = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/for_use/'
         self.folder_path = os.path.join(self.parent, self.track)
@@ -182,15 +183,15 @@ class SongAnalysis():
         data[self.genre_list].plot()
         # plt.show()
 
-        plt.savefig(self.parent+'results/'+self.track, bbox_inches='tight')
+        plt.savefig(self.parent+'results/'+self.model+'/'+self.track, bbox_inches='tight')
         
 
-    
 
 
 
 
 
-track = 'this_side.mp3'
-model = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/saved_models/model_v4'
+
+track = 'trouble.mp3'
+model = 'model_v4'
 analyse = SongAnalysis(track, model)
