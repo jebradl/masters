@@ -8,11 +8,12 @@ import shutil
 from tqdm import tqdm
 
 tracks = utils.load('c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/fma_metadata/tracks.csv')
-folders_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_small/'
-images_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img/'
+folders_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/classified_medium/'
+images_path = 'c:/Users/night/Documents/09/school/actual-masters/git/masters/models/data/fma/img_medium/'
 images = os.listdir(images_path)
 
 small = tracks[tracks['set', 'subset'] <= 'small']
+medium = tracks[tracks['set', 'subset'] <= 'medium']
 # print(small.shape)
 # print('{} top-level genres'.format(len(small['track', 'genre_top'].unique())))
 # print(small['track', 'genre_top'].unique())
@@ -33,7 +34,7 @@ def classify_image(image):
     track_no = image.split('.')
     track = int(track_no[0])
 
-    genre = small.loc[track]['track', 'genre_top']
+    genre = medium.loc[track]['track', 'genre_top']
     # print('track {} is a {} track'.format(track, genre))
 
     target_path = os.path.join(folders_path, genre)

@@ -8,7 +8,11 @@ models/.ipynb_checkpoints/
 models/data/fma/classified_small/
 models/data/fma/fma_metadata/
 models/data/fma/fma_small/
+models/data/fma/fma_medium
 models/data/fma/img/
+models/data/fma/classified_medium1
+models/data/fma/classified_medium2
+models/data/fma/classified_medium3
 *.mp3
 test/sample_sounds/
 runs/
