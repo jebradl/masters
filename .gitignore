@@ -16,4 +16,4 @@ models/data/fma/classified_medium3
 *.mp3
 test/sample_sounds/
 runs/
-
+data.csv
